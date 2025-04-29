@@ -3,6 +3,8 @@
 **Author:** Ryan T. M. Reiffenberger  
 **Text Domain:** `tjb-birthstone-feature`
 
+![GitHub License](https://img.shields.io/github/license/reclaimergold/rnd-terraform)
+
 ## Description
 
 The **TJB Birthstone Feature** plugin provides a simple shortcode to display information from a custom post type `birthstone`, matching the current month. You can output:
