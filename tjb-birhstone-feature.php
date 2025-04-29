@@ -19,23 +19,29 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Shortcode handler for [birthstone].
  *
  * Attributes:
- *   field (string) – either 'title' (default) or 'url'
+ *   field (string) – 'title' (default), 'url', 'excerpt', or 'image'
+ *   size  (string) – image size when using 'image' (defaults to 'full')
  *
  * @param array $atts Shortcode attributes.
- * @return string Escaped title or URL, or empty string if no match.
+ * @return string Escaped output or empty string if no match.
  */
 function tjb_bf_get_current_month_birthstone( $atts ) {
+    // Default attributes
 	$atts = shortcode_atts( array(
 		'field' => 'title',
+        'size'  => 'full',
 	), $atts, 'birthstone' );
 
 	$field = sanitize_key( $atts['field'] );
-	if ( ! in_array( $field, array( 'title', 'url' ), true ) ) {
+    // Allowed fields
+    $allowed = array( 'title', 'url', 'excerpt', 'image' );
+    if ( ! in_array( $field, $allowed, true ) ) {
 		$field = 'title';
 	}
 
 	$current_month = date_i18n( 'F' ); // localized month name
 
+    // Query for a birthstone post matching the month name
 	$query = new WP_Query( array(
 		'post_type'      => 'birthstone',
 		'title'          => $current_month,
@@ -50,11 +56,32 @@ function tjb_bf_get_current_month_birthstone( $atts ) {
 
 	$post_id = $query->posts[0];
 
-	if ( 'url' === $field ) {
+    switch ( $field ) {
+        case 'url':
 		return esc_url( get_permalink( $post_id ) );
-	}
 
+        case 'excerpt':
+            $excerpt = get_the_excerpt( $post_id );
+            return esc_html( $excerpt );
+
+        case 'image':
+            // Get image size attribute
+            $size = sanitize_key( $atts['size'] );
+            $img_url = get_the_post_thumbnail_url( $post_id, $size );
+            if ( ! $img_url ) {
+                return '';
+            }
+            // Output an <img> tag for use in Elementor or other builders
+            return sprintf(
+                '<img src="%s" alt="%s" />',
+                esc_url( $img_url ),
+                esc_attr( get_the_title( $post_id ) )
+            );
+
+        case 'title':
+        default:
 	return esc_html( get_the_title( $post_id ) );
+    }
 }
 add_shortcode( 'birthstone', 'tjb_bf_get_current_month_birthstone' );
 
